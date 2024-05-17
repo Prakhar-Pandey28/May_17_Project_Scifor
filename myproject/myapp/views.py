@@ -1,59 +1,38 @@
-from django.shortcuts import render
+K
 
-# Create your views here.
-from rest_framework import viewsets
+import requests
+from rest_framework import viewsets, status
 from rest_framework.response import Response
-from .models import Item
-from .serializers import ItemSerializer
+from rest_framework.decorators import action
 
-class ItemViewSet(viewsets.ViewSet):
+class PlaceholderViewSet(viewsets.ViewSet):
 
+    @action(detail=False, methods=['get'])
     def list(self, request):
-        queryset = Item.objects.all()
-        serializer = ItemSerializer(queryset, many=True)
-        return Response(serializer.data)
+        response = requests.get('https://jsonplaceholder.typicode.com/posts')
+        return Response(response.json(), status=response.status_code)
 
+    @action(detail=False, methods=['post'])
     def create(self, request):
-        serializer = ItemSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+        response = requests.post('https://jsonplaceholder.typicode.com/posts', json=request.data)
+        return Response(response.json(), status=response.status_code)
 
+    @action(detail=True, methods=['get'])
     def retrieve(self, request, pk=None):
-        try:
-            item = Item.objects.get(pk=pk)
-        except Item.DoesNotExist:
-            return Response(status=404)
-        serializer = ItemSerializer(item)
-        return Response(serializer.data)
+        response = requests.get(f'https://jsonplaceholder.typicode.com/posts/{pk}')
+        return Response(response.json(), status=response.status_code)
 
+    @action(detail=True, methods=['put'])
     def update(self, request, pk=None):
-        try:
-            item = Item.objects.get(pk=pk)
-        except Item.DoesNotExist:
-            return Response(status=404)
-        serializer = ItemSerializer(item, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=400)
+        response = requests.put(f'https://jsonplaceholder.typicode.com/posts/{pk}', json=request.data)
+        return Response(response.json(), status=response.status_code)
 
+    @action(detail=True, methods=['patch'])
     def partial_update(self, request, pk=None):
-        try:
-            item = Item.objects.get(pk=pk)
-        except Item.DoesNotExist:
-            return Response(status=404)
-        serializer = ItemSerializer(item, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=400)
+        response = requests.patch(f'https://jsonplaceholder.typicode.com/posts/{pk}', json=request.data)
+        return Response(response.json(), status=response.status_code)
 
+    @action(detail=True, methods=['delete'])
     def destroy(self, request, pk=None):
-        try:
-            item = Item.objects.get(pk=pk)
-        except Item.DoesNotExist:
-            return Response(status=404)
-        item.delete()
-        return Response(status=204)
+        response = requests.delete(f'https://jsonplaceholder.typicode.com/posts/{pk}')
+        return Response(status=response.status_code)
